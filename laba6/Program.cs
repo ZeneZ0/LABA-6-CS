@@ -3,7 +3,7 @@ using System.Windows.Forms;
 
 namespace FallingParticlesGame
 {
-    static class Program
+    static class Program 
     {
         [STAThread]
         static void Main()
