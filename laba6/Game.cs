@@ -133,5 +133,193 @@ namespace FallingParticlesGame
                 Particles.Add(particle);
             }
         }
+
+        private void UpdateParticles()
+        {
+            foreach (var particle in Particles.ToArray())
+            {
+                particle.Y += particle.Speed;
+
+                if (Cart.Bounds.IntersectsWith(new Rectangle(
+                    (int)particle.X, (int)particle.Y,
+                    (int)particle.Size, (int)particle.Size)))
+                {
+                    HandleParticleCollision(particle);
+                }
+
+                if (particle.IsCollected || particle.Y > Cart.Y + 100)
+                {
+                    Particles.Remove(particle);
+                }
+            }
+        }
+
+        private void HandleParticleCollision(Particle particle)
+        {
+            particle.IsCollected = true;
+            CreateExplosion(particle);
+
+            if (particle.IsDangerous && !IsInvulnerable)
+            {
+                Lives--;
+                OnHit?.Invoke();
+
+                if (Lives <= 0)
+                {
+                    IsGameOver = true;
+                    return;
+                }
+            }
+
+            ApplyParticleEffect(particle);
+        }
+
+        private void CreateExplosion(Particle particle)
+        {
+            Explosions.Add(new Explosion
+            {
+                Location = new Point(particle.X + particle.Size / 2, particle.Y + particle.Size / 2),
+                Color = particle.Color,
+                Radius = particle.Size,
+                LifeTime = 10
+            });
+        }
+
+        private void UpdateExplosions()
+        {
+            foreach (var explosion in Explosions.ToArray())
+            {
+                explosion.LifeTime--;
+                if (explosion.LifeTime <= 0)
+                {
+                    Explosions.Remove(explosion);
+                }
+            }
+        }
+
+        private void ApplyParticleEffect(Particle particle)
+        {
+            ResetCurrentEffect();
+            CurrentEffect = particle.Effect;
+
+            switch (particle.Effect)
+            {
+                case ParticleEffect.DoubleSize:
+                    Cart.Width = originalCartWidth * 2;
+                    EffectEndTime = DateTime.Now.AddSeconds(5);
+                    break;
+
+                case ParticleEffect.Freeze:
+                    Cart.IsFrozen = true;
+                    EffectEndTime = DateTime.Now.AddSeconds(2);
+                    break;
+
+                case ParticleEffect.HalfSize:
+                    Cart.Width = originalCartWidth / 2;
+                    EffectEndTime = DateTime.Now.AddSeconds(5);
+                    break;
+
+                case ParticleEffect.BonusPoints:
+                    Score += 5;
+                    CurrentEffect = ParticleEffect.None;
+                    break;
+
+                case ParticleEffect.Invulnerability:
+                    ActivateInvulnerability(5);
+                    CurrentEffect = ParticleEffect.None;
+                    break;
+
+                case ParticleEffect.None:
+                    Score += 1;
+                    break;
+            }
+        }
+
+        public void ActivateInvulnerability(float seconds)
+        {
+            IsInvulnerable = true;
+            invulnerabilityEndTime = DateTime.Now.AddSeconds(seconds);
+        }
+
+        private void GenerateSteam()
+        {
+            if (Math.Abs(Cart.LastMovement) > 0.1f && random.Next(10) < 3)
+            {
+                SteamParticles.Add(new Particle
+                {
+                    X = Cart.X + Cart.Width / 2 + random.Next(-10, 10),
+                    Y = Cart.Y,
+                    Size = 5 + random.Next(10),
+                    Color = Color.WhiteSmoke,
+                    Effect = ParticleEffect.Steam,
+                    Speed = -1 - random.Next(3)
+                });
+            }
+        }
+
+        private void UpdateSteam()
+        {
+            foreach (var steam in SteamParticles.ToArray())
+            {
+                steam.Y += steam.Speed;
+                steam.Size = (int)Math.Max(0, steam.Size - 0.1f);
+
+                if (steam.Size <= 0)
+                {
+                    SteamParticles.Remove(steam);
+                }
+            }
+        }
+
+        private void ResetCurrentEffect()
+        {
+            Cart.ResetSize();
+            CurrentEffect = ParticleEffect.None;
+        }
+
+        public void Draw(Graphics g)
+        {
+            foreach (var steam in SteamParticles)
+            {
+                steam.Draw(g);
+            }
+
+            foreach (var explosion in Explosions)
+            {
+                explosion.Draw(g);
+            }
+        }
+
+        public void Reset()
+        {
+            Particles.Clear();
+            SteamParticles.Clear();
+            Explosions.Clear();
+            Score = 0;
+            Lives = 3;
+            IsGameOver = false;
+            CurrentEffect = ParticleEffect.None;
+            IsInvulnerable = false;
+            Cart.ResetSize();
+        }
+    }
+
+    public class Explosion
+    {
+        public Point Location;
+        public int Radius;
+        public int LifeTime;
+        public Color Color;
+
+        public void Draw(Graphics g)
+        {
+            var alpha = (int)(255 * (LifeTime / 10f));
+            using (var brush = new SolidBrush(Color.FromArgb(alpha, Color)))
+            {
+                g.FillEllipse(brush,
+                    Location.X - Radius, Location.Y - Radius,
+                    Radius * 2, Radius * 2);
+            }
+        }
     }
 }
