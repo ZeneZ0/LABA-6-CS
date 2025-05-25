@@ -72,5 +72,66 @@ namespace FallingParticlesGame
                     IsInvulnerable = false;
                 }
             }
+
+            private void SpawnParticles()
+            {
+                spawnCounter++;
+                if (spawnCounter >= 100 - SpawnRate)
+                {
+                    CreateParticle();
+                    spawnCounter = 0;
+                }
+            }
+
+            private void CreateParticle()
+            {
+                var particle = new Particle
+                {
+                    X = random.Next(0, screenWidth),
+                    Y = -20,
+                    Size = ParticleSize,
+                    Speed = ParticleSpeed
+                };
+
+                int rnd = random.Next(100);
+                if (rnd < 15) // 15% красные (опасные)
+                {
+                    particle.Color = Color.Red;
+                    particle.Effect = ParticleEffect.None;
+                }
+                else if (rnd < 30) // 15% фиолетовые (неуязвимость)
+                {
+                    particle.Color = Color.Purple;
+                    particle.Effect = ParticleEffect.Invulnerability;
+                }
+                else if (rnd < 45) // 15% зелёные
+                {
+                    particle.Color = Color.Green;
+                    particle.Effect = ParticleEffect.None;
+                }
+                else if (rnd < 60) // 15% жёлтые
+                {
+                    particle.Color = Color.Yellow;
+                    particle.Effect = ParticleEffect.DoubleSize;
+                }
+                else if (rnd < 75) // 15% синие
+                {
+                    particle.Color = Color.Blue;
+                    particle.Effect = ParticleEffect.Freeze;
+                }
+                else if (rnd < 90) // 15% розовые
+                {
+                    particle.Color = Color.Pink;
+                    particle.Effect = ParticleEffect.HalfSize;
+                }
+                else // 10% бирюзовые
+                {
+                    particle.Color = Color.Turquoise;
+                    particle.Effect = ParticleEffect.BonusPoints;
+                }
+
+                Particles.Add(particle);
+            }
         }
+    }
 }

@@ -53,5 +53,31 @@ namespace FallingParticlesGame
                 g.FillEllipse(brush, X, Y, Size, Size);
             }
         }
+
+
+        private void DrawSteam(Graphics g)
+        {
+            var originalSmoothing = g.SmoothingMode;
+            g.SmoothingMode = SmoothingMode.HighQuality;
+
+            int alpha = 60 + (int)(Math.Sin(DateTime.Now.Millisecond * 0.01) * 40);
+            using (var steamBrush = new SolidBrush(Color.FromArgb(alpha, Color.WhiteSmoke)))
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    int puffSize = Size + i * 3;
+                    int offsetX = (int)(Math.Sin(DateTime.Now.Millisecond * 0.005 + i) * 5);
+                    g.FillEllipse(steamBrush,
+                        X - puffSize / 2 + offsetX,
+                        Y - i * 5 - (DateTime.Now.Millisecond % 1000) / 50,
+                        puffSize, puffSize);
+                }
+            }
+
+            g.SmoothingMode = originalSmoothing;
+        }
+
+
     }
 }
+    
