@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using static FallingParticlesGame.Game;
 
 namespace FallingParticlesGame
 {
@@ -54,7 +53,6 @@ namespace FallingParticlesGame
             }
         }
 
-
         private void DrawSteam(Graphics g)
         {
             var originalSmoothing = g.SmoothingMode;
@@ -76,8 +74,5 @@ namespace FallingParticlesGame
 
             g.SmoothingMode = originalSmoothing;
         }
-
-
     }
 }
-    
