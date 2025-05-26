@@ -91,7 +91,7 @@ namespace FallingParticlesGame
             };
 
             int rnd = random.Next(100);
-            if (rnd < 20) // 15% красные (опасные)
+            if (rnd < 15) // 15% красные (опасные)
             {
                 particle.Color = Color.Red;
                 particle.Effect = ParticleEffect.None;
@@ -153,7 +153,7 @@ namespace FallingParticlesGame
         private void HandleParticleCollision(Particle particle)
         {
             particle.IsCollected = true;
-            
+            CreateExplosion(particle);
 
             if (particle.IsDangerous && !IsInvulnerable)
             {
@@ -170,7 +170,16 @@ namespace FallingParticlesGame
             ApplyParticleEffect(particle);
         }
 
-  
+        private void CreateExplosion(Particle particle)
+        {
+            Explosions.Add(new Explosion
+            {
+                Location = new Point(particle.X + particle.Size / 2, particle.Y + particle.Size / 2),
+                Color = particle.Color,
+                Radius = particle.Size,
+                LifeTime = 10
+            });
+        }
 
         private void UpdateExplosions()
         {
@@ -291,6 +300,22 @@ namespace FallingParticlesGame
         }
     }
 
-   
-    
+    public class Explosion
+    {
+        public Point Location;
+        public int Radius;
+        public int LifeTime;
+        public Color Color;
+
+        public void Draw(Graphics g)
+        {
+            var alpha = (int)(255 * (LifeTime / 10f));
+            using (var brush = new SolidBrush(Color.FromArgb(alpha, Color)))
+            {
+                g.FillEllipse(brush,
+                    Location.X - Radius, Location.Y - Radius,
+                    Radius * 2, Radius * 2);
+            }
+        }
+    }
 }

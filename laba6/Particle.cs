@@ -32,8 +32,19 @@ namespace FallingParticlesGame
                 return;
             }
 
- 
-            
+            // Рисуем трейл
+            for (int i = 0; i < trail.Length; i++)
+            {
+                if (trail[i] != Point.Empty)
+                {
+                    int alpha = 50 + i * 40;
+                    int size = Size - i * 2;
+                    using (var brush = new SolidBrush(Color.FromArgb(alpha, Color)))
+                        g.FillEllipse(brush,
+                            trail[i].X - size / 2, trail[i].Y - size / 2,
+                            size, size);
+                }
+            }
 
             // Рисуем саму частицу
             using (var brush = new SolidBrush(Color))

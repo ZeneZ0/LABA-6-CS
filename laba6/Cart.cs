@@ -23,7 +23,10 @@ namespace FallingParticlesGame
             Width = BaseWidth;
         }
 
-        
+        private int Clamp(int value, int min, int max)
+        {
+            return (value < min) ? min : (value > max) ? max : value;
+        }
 
         public void Update(int mouseX, int screenWidth)
         {
@@ -31,7 +34,7 @@ namespace FallingParticlesGame
             if (!IsFrozen)
             {
                 X = mouseX - Width / 2;
-                
+                X = Clamp(X, 0, screenWidth - Width);
             }
             LastMovement = X - oldX;
             UpdateWheels();
@@ -74,7 +77,8 @@ namespace FallingParticlesGame
                 g.FillPolygon(bodyBrush, backShape);
             }
 
-        
+            // Рисуем колёса с анимацией
+            DrawWheels(g);
 
             // Рельсы под вагонеткой
             DrawRails(g);
@@ -83,7 +87,23 @@ namespace FallingParticlesGame
             g.SmoothingMode = originalSmoothing;
         }
 
-       
+        private void DrawWheels(Graphics g)
+        {
+            int wheelSize = Height / 3;
+            int wheelY = Y + Height / 2 - wheelSize / 4;
+
+            using (var wheelBrush = new SolidBrush(Color.Black))
+            using (var wheelPen = new Pen(Color.DimGray, 2))
+            {
+                // Переднее колесо
+                DrawWheel(g, wheelBrush, wheelPen,
+                    X + Width / 6, wheelY, wheelSize);
+
+                // Заднее колесо
+                DrawWheel(g, wheelBrush, wheelPen,
+                    X + Width * 5 / 6, wheelY, wheelSize);
+            }
+        }
 
         private void DrawWheel(Graphics g, Brush brush, Pen pen, int centerX, int centerY, int size)
         {
